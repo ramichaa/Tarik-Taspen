@@ -1,0 +1,6 @@
+{
+    "require": {
+        "php-parallel-lint/php-console-color": "^1.0",
+        "phpoffice/phpspreadsheet": "^1.24"
+    }
+}
