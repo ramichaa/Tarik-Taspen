@@ -29,7 +29,7 @@ $count_no_taspen = count($list_no_taspen);
 if ($count_no_taspen > 0) 
 
 {
-    #echo $consoleColor->apply("color_10", '-> Total KPP : '.$tot_kpp).PHP_EOL;
+    
     echo $consoleColor->apply("color_44", 'Terdapat ' . $count_no_taspen . ' data npwp...' ). PHP_EOL . PHP_EOL;
 
     $reader_cek = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
@@ -37,8 +37,7 @@ if ($count_no_taspen > 0)
     $sheet_cek = $spreadsheet_cek->getSheetByName('data');
 
     $app    = new getNoTaspen();
-    //$login  = $app->doLogin($user, $pass);
-
+    
     for ($i = 0; $i < $count_no_taspen; $i++) 
     
     {
@@ -46,31 +45,23 @@ if ($count_no_taspen > 0)
         
             $do_no_taspen = $app->doNoTaspen($list_no_taspen[$i][0], $tahun);
 
-            #print_r($do_no_taspen);
-
+            # Pecah Data untuk mencari No Taspen dan Link Detail Bupotnya 
             $data_awal = get_string_between($do_no_taspen, '<tbody>', '</tbody>');
             $replace = str_replace('<td>', '', $data_awal);
             $replace1 = str_replace('</tr>', '', $replace);
             $replace2 = str_replace(array("\r", "\n"), '', $replace1);
-            #print_r($data_awal);
-            #$data_awal1 = get_string_between($data_awal, '<tr>', '</tr>');
-            #$data_awal2 = get_string_between($data_awal1, '<td>', '</td>');
-
+            
             $pecah = explode('<tr>', $replace2);
-
             $pecah_data = array_map(function ($val) {
                 return explode('</td>', $val);
             }, $pecah);
-
-            #print_r($pecah_data);
 
             $jml_data = count((array)$pecah_data);
             $jml_data_tampil = $jml_data - 1;
 
             echo $consoleColor->apply("color_157", '           Terdapat ' . $jml_data_tampil . ' data No Taspen' ). PHP_EOL . PHP_EOL;
 
-            #if($jml_data = 2)
-
+            # Proses Penarikan Data Detail nya, tergantung berapa data No Taspen
             for ($a = 1 ; $a < $jml_data; $a++)
             
             {
@@ -78,25 +69,20 @@ if ($count_no_taspen > 0)
                 $array_taspen = explode(" :",str_replace(['<b>','</b>','<br>','</br>','<br/>'],'',$pecah_data[$a][0]));
                 $array_taspen = str_replace(array("\r", "\n"), '', $array_taspen);
 
-                #print_r($array_taspen);
-
+                #Mengambil data No Taspen
                 @$no_taspen = trim(preg_replace('/\s\s+/', ' ', str_replace([' ','NIP'],'',$array_taspen[1])));
 
-                #print_r($pecah_data[$a][3]);
-
+                #Mengambil data Link untuk detail datanya
                 @$pecah_link = str_replace('<a target="_blank" href ="','',$pecah_data[$a][3]);
                 $pecah_link1 = str_replace('"><button type="button" class="btn btn-warning"><i class="flaticon2-fax"></i> Cetak</button></a>','',$pecah_link);
                 $pecah_link2 = trim(preg_replace('/\s\s+/', ' ', str_replace("\n", " ", $pecah_link1)));
                 
-                #print_r($pecah_link1);
-
-                //https://services.taspen.co.id/e-spt/eSPT_taspen.php?textnotas=13105325900&tahun=2021&mp1=1&mp2=12            
+                #Link eksekusi data detailnya
                 $link =  'https://services.taspen.co.id/e-spt/' . $pecah_link2 . '';
-                
-                #print_r($link);
-                
+          
                 $do_spt_taspen = $app->do_spt_taspen($link);
 
+                #Proses pecah data Bupot 1721-A2 dari web Taspen
                 preg_match_all('#<tr[^>]*>(.*?)</tr>#is', $do_spt_taspen, $lines_ex);
 
                 $result_ex = array();
@@ -130,6 +116,7 @@ if ($count_no_taspen > 0)
                 @$pph_terutang               =   str_replace(',','',$result_ex[36][2]);
                 @$pph_dipotong               =   str_replace(',','',$result_ex[37][2]);
             
+                #Proses mindah data array ke excel
                 $sheet_sug = $spreadsheet_cek->getSheetByName('data');
                 $sheet_sug->getTabColor()->setRGB('FFD966');
 
@@ -158,7 +145,6 @@ if ($count_no_taspen > 0)
                     $sheet_sug->setCellValue('S' . $s, $pph_dipotong);
                     
                     $s++;
-
             
                     sleep(rand(0.5, 1));
             }
@@ -167,8 +153,6 @@ if ($count_no_taspen > 0)
     $writer_cek = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet_cek, 'Xlsx');
     date_default_timezone_set('Asia/jakarta');
     $writer_cek->save('hasil/spt_tahunan_taspen_' . date('dmY_His') . '.xlsx');
-
-    //$app->doLogout();
 
     echo 'File hasil download SPT Tahunan Taspen dapat dibuka di folder hasil...' . PHP_EOL . PHP_EOL . 'Terima kasih...' . PHP_EOL . PHP_EOL;
 } else {

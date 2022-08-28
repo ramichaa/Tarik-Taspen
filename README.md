@@ -7,6 +7,6 @@ Digunakan untuk melakukan menarik data SPT Tahunan Pensiunan dari web Taspen.
 3. Double klik tarik_taspen.bat
 4. Hasil pengecekan ada di folder hasil
 
-Gunakan dengan bijak :D
+Gunakan dengan bijak 😀
 
 Terima kasih
